@@ -1,5 +1,6 @@
 var http = require("http");
 var fs = require("fs");
+
 function templateHTML(title, list, body) {
   return `
   <!doctype html>
@@ -81,7 +82,7 @@ var app = http.createServer(function (request, response) {
         title,
         list,
         `
-        <form action="http://localhost:3000/process_create" method="post">
+        <form action="http://localhost:3000/create_process" method="post">
           <p><input type="text" name="title" placeholder="title"></p>
           <p>
             <textarea name="description" placeholder="description"></textarea>
@@ -95,6 +96,24 @@ var app = http.createServer(function (request, response) {
       response.writeHead(200);
       response.end(template);
     });
+  } else if (queryData.pathname === "/create_process") {
+    var body = "";
+    request.on("data", function (data) {
+      body += data;
+    });
+    request.on("end", function () {
+      // 이전에 위에서 만든 queryData 객체는 body의 데이터를 담고 있지 않으므로 입력할 body 값으로 새 객체를 만들어 줘야 한다
+      // querystring의 경우는 옛 기술로 deprecated 사장되었으므로 대체 기술인 URLSearchParams 를 사용하여 키와 값을 쌍으로 가지는 값을 인자로 받아 키/값 쌍을 순회가능한 객체를 만들어 준다
+      let post = new URLSearchParams(body);
+      var title = post.get("title");
+      var description = post.get("description");
+
+      console.log(post);
+      console.log(title);
+      console.log(description);
+    });
+    response.writeHead(200);
+    response.end("success");
   } else {
     response.writeHead(404); //  // 서버의 상태코드를 반환한다. 페이지를 찾을 수 없다면 해당 상태인 상태 코드 404 을 리턴한다
     response.end("not found"); // 클라이언트에게 괄호 안의 데이터를 보내고 응답을 끝낸다. 페이지를 찾지 못했다는 의미의 not found 를 적어주었다
