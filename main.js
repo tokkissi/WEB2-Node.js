@@ -107,13 +107,11 @@ var app = http.createServer(function (request, response) {
       let post = new URLSearchParams(body);
       var title = post.get("title");
       var description = post.get("description");
-
-      console.log(post);
-      console.log(title);
-      console.log(description);
+      fs.writeFile(`data/${title}`, description, "utf8", (err) => {
+        response.writeHead(302, { Location: `/?id=${title}` });
+        response.end();
+      });
     });
-    response.writeHead(200);
-    response.end("success");
   } else {
     response.writeHead(404); //  // 서버의 상태코드를 반환한다. 페이지를 찾을 수 없다면 해당 상태인 상태 코드 404 을 리턴한다
     response.end("not found"); // 클라이언트에게 괄호 안의 데이터를 보내고 응답을 끝낸다. 페이지를 찾지 못했다는 의미의 not found 를 적어주었다
