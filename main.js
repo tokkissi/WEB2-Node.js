@@ -1,7 +1,7 @@
 var http = require("http");
 var fs = require("fs");
 
-function templateHTML(title, list, body) {
+function templateHTML(title, list, body, control) {
   return `
   <!doctype html>
   <html>
@@ -12,7 +12,7 @@ function templateHTML(title, list, body) {
   <body>
     <h1><a href="/">WEB</a></h1>
     ${list}
-    <a href="/create">create</a>
+    ${control}
     ${body}
   </body>
   </html>
@@ -46,7 +46,8 @@ var app = http.createServer(function (request, response) {
           title,
           list,
           `<h2>${title}</h2>
-            <p>${description}</p>`
+            <p>${description}</p>`,
+          `<a href="/create">create</a>`
         );
         response.writeHead(200); //서버의 상태코드를 반환한다. 정상적으로 페이지를 찾을 수 있으므로 정상 상태를 나타내는 200 을 리턴한다
         response.end(template); // 클라이언트에게 괄호 안의 데이터를 보내고 응답을 끝낸다
@@ -64,7 +65,8 @@ var app = http.createServer(function (request, response) {
               title,
               list,
               `<h2>${title}</h2>
-            <p>${description}</p>`
+            <p>${description}</p>`,
+              `<a href="/create">create</a> <a href="/update?=${title}">update</a>`
             );
             response.writeHead(200); //서버의 상태코드를 반환한다. 정상적으로 페이지를 찾을 수 있으므로 정상 상태를 나타내는 200 을 리턴한다
             response.end(template); // 클라이언트에게 괄호 안의 데이터를 보내고 응답을 끝낸다
@@ -90,7 +92,8 @@ var app = http.createServer(function (request, response) {
             <input type="submit">
           </p>
         </form>
-        `
+        `,
+        ""
       );
       response.writeHead(200);
       response.end(template);
