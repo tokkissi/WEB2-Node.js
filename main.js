@@ -66,7 +66,7 @@ var app = http.createServer(function (request, response) {
               list,
               `<h2>${title}</h2>
             <p>${description}</p>`,
-              `<a href="/create">create</a> <a href="/update?=${title}">update</a>`
+              `<a href="/create">create</a> <a href="/update?id=${title}">update</a>`
             );
             response.writeHead(200); //서버의 상태코드를 반환한다. 정상적으로 페이지를 찾을 수 있으므로 정상 상태를 나타내는 200 을 리턴한다
             response.end(template); // 클라이언트에게 괄호 안의 데이터를 보내고 응답을 끝낸다
@@ -83,7 +83,7 @@ var app = http.createServer(function (request, response) {
         title,
         list,
         `
-        <form action="http://localhost:3000/create_process" method="post">
+        <form action="/create_process" method="post">
           <p><input type="text" name="title" placeholder="title"></p>
           <p>
             <textarea name="description" placeholder="description"></textarea>
@@ -113,6 +113,39 @@ var app = http.createServer(function (request, response) {
         response.writeHead(302, { Location: `/?id=${title}` });
         response.end();
       });
+    });
+  } else if (queryData.pathname === "/update") {
+    fs.readdir("./data", (error, filelist) => {
+      fs.readFile(
+        `data/${queryData.searchParams.get("id")}`,
+        "utf-8",
+        (err, description) => {
+          var title = queryData.searchParams.get("id");
+          var list = templateList(filelist);
+          var template = templateHTML(
+            title,
+            list,
+            // title 을 수정해도 업데이트 이전의 파일과 가리키는 값을 가리켜야 수정이 가능하므로 수정 대상을 id 라는 변수에 담아 저장하여  formData로 넘겨준다. 사용자에게 보일 필요 없는 값이므로 hidden 속성으로 보이지 않게 값을 넘겨준다. 즉 사용자가 변경하면 안되는 값을 보낼때 사용한다
+            `
+            <form action="/update_process" method="post">
+              <input type="hidden" name="id" value="${title}">
+              <p><input type="text" name="title" placeholder="title" value="${title}"></p>
+              <p>
+                <textarea name="description" placeholder="description">${description}</textarea>
+              </p>
+              <p>
+                <input type="submit">
+              </p>
+            </form>
+            `,
+            `
+            <a href="/create">create</a> <a href="/update?id=${title}">update</a>
+            `
+          );
+          response.writeHead(200); //서버의 상태코드를 반환한다. 정상적으로 페이지를 찾을 수 있으므로 정상 상태를 나타내는 200 을 리턴한다
+          response.end(template); // 클라이언트에게 괄호 안의 데이터를 보내고 응답을 끝낸다
+        }
+      );
     });
   } else {
     response.writeHead(404); //  // 서버의 상태코드를 반환한다. 페이지를 찾을 수 없다면 해당 상태인 상태 코드 404 을 리턴한다
