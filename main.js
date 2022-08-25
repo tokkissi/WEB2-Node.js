@@ -22,7 +22,7 @@ function templateHTML(title, list, body) {
 function templateList(filelist) {
   var list = "<ul>";
   for (let i = 0; i < filelist.length; i++) {
-    list += `<li><a href="?id=${filelist[i]}">${filelist[i]}</a></li>`;
+    list += `<li><a href="/?id=${filelist[i]}">${filelist[i]}</a></li>`;
   }
   list += "</ul>";
   return list;
@@ -34,7 +34,6 @@ var app = http.createServer(function (request, response) {
   // url.parse 를 대체할 새로운 기술로 절대경로를 인자로 갖는 URL 객체를 이용한다
   const queryData = new URL("http://localhost:3000" + _url);
   // var queryData = url.parse(_url, true).query;  // 더이상 사용, 지원되지 않는다
-  console.log(queryData.pathname);
   // 쿼리로 받아온 pathname 이 '/' 면 다음을 실행
   if (queryData.pathname === "/") {
     // 쿼리로 받아온 id 값이 null 이면 다음을 실행
