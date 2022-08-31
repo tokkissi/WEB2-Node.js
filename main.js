@@ -1,8 +1,17 @@
 var http = require("http");
 var fs = require("fs");
 
-function templateHTML(title, list, body, control) {
-  return `
+let template = {
+  list: function (filelist) {
+    var list = "<ul>";
+    for (let i = 0; i < filelist.length; i++) {
+      list += `<li><a href="/?id=${filelist[i]}">${filelist[i]}</a></li>`;
+    }
+    list += "</ul>";
+    return list;
+  },
+  HTML: function (title, list, body, control) {
+    return `
   <!doctype html>
   <html>
   <head>
@@ -17,16 +26,8 @@ function templateHTML(title, list, body, control) {
   </body>
   </html>
   `;
-}
-
-function templateList(filelist) {
-  var list = "<ul>";
-  for (let i = 0; i < filelist.length; i++) {
-    list += `<li><a href="/?id=${filelist[i]}">${filelist[i]}</a></li>`;
-  }
-  list += "</ul>";
-  return list;
-}
+  },
+};
 
 var app = http.createServer(function (request, response) {
   // var url = require("url");  // url.parse 가 지원안되므로 불필요
@@ -41,8 +42,8 @@ var app = http.createServer(function (request, response) {
       fs.readdir("./data", (error, filelist) => {
         var title = "Welcome";
         var description = "Hello, Node.js";
-        var list = templateList(filelist);
-        var template = templateHTML(
+        var list = template.list(filelist);
+        var html = template.HTML(
           title,
           list,
           `<h2>${title}</h2>
@@ -50,7 +51,7 @@ var app = http.createServer(function (request, response) {
           `<a href="/create">create</a>`
         );
         response.writeHead(200); //서버의 상태코드를 반환한다. 정상적으로 페이지를 찾을 수 있으므로 정상 상태를 나타내는 200 을 리턴한다
-        response.end(template); // 클라이언트에게 괄호 안의 데이터를 보내고 응답을 끝낸다
+        response.end(html); // 클라이언트에게 괄호 안의 데이터를 보내고 응답을 끝낸다
         // 쿼리로 받아온 id 값이 null 이 아니면 다음을 실행
       });
     } else {
@@ -60,8 +61,8 @@ var app = http.createServer(function (request, response) {
           "utf-8",
           (err, description) => {
             var title = queryData.searchParams.get("id");
-            var list = templateList(filelist);
-            var template = templateHTML(
+            var list = template.list(filelist);
+            var html = template.HTML(
               title,
               list,
               `
@@ -79,7 +80,7 @@ var app = http.createServer(function (request, response) {
             );
             // delete의 경우, get 방식으로 요청하면 안된다! 잊지말자
             response.writeHead(200); //서버의 상태코드를 반환한다. 정상적으로 페이지를 찾을 수 있으므로 정상 상태를 나타내는 200 을 리턴한다
-            response.end(template); // 클라이언트에게 괄호 안의 데이터를 보내고 응답을 끝낸다
+            response.end(html); // 클라이언트에게 괄호 안의 데이터를 보내고 응답을 끝낸다
           }
         );
       });
@@ -87,9 +88,8 @@ var app = http.createServer(function (request, response) {
   } else if (queryData.pathname === "/create") {
     fs.readdir("./data", (error, filelist) => {
       var title = "Welcome";
-      var description = "Hello, Node.js";
-      var list = templateList(filelist);
-      var template = templateHTML(
+      var list = template.list(filelist);
+      var html = template.HTML(
         title,
         list,
         `
@@ -106,7 +106,7 @@ var app = http.createServer(function (request, response) {
         ""
       );
       response.writeHead(200);
-      response.end(template);
+      response.end(html);
     });
   } else if (queryData.pathname === "/create_process") {
     var body = "";
@@ -131,8 +131,8 @@ var app = http.createServer(function (request, response) {
         "utf-8",
         (err, description) => {
           var title = queryData.searchParams.get("id");
-          var list = templateList(filelist);
-          var template = templateHTML(
+          var list = template.list(filelist);
+          var html = template.HTML(
             title,
             list,
             // title 을 수정해도 업데이트 이전의 파일과 가리키는 값을 가리켜야 수정이 가능하므로 수정 대상을 id 라는 변수에 담아 저장하여  formData로 넘겨준다. 사용자에게 보일 필요 없는 값이므로 hidden 속성으로 보이지 않게 값을 넘겨준다. 즉 사용자가 변경하면 안되는 값을 보낼때 사용한다
@@ -153,7 +153,7 @@ var app = http.createServer(function (request, response) {
             `
           );
           response.writeHead(200); //서버의 상태코드를 반환한다. 정상적으로 페이지를 찾을 수 있으므로 정상 상태를 나타내는 200 을 리턴한다
-          response.end(template); // 클라이언트에게 괄호 안의 데이터를 보내고 응답을 끝낸다
+          response.end(html); // 클라이언트에게 괄호 안의 데이터를 보내고 응답을 끝낸다
         }
       );
     });
