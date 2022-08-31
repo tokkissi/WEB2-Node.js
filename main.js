@@ -64,8 +64,10 @@ var app = http.createServer(function (request, response) {
             var template = templateHTML(
               title,
               list,
-              `<h2>${title}</h2>
-            <p>${description}</p>`,
+              `
+              <h2>${title}</h2>
+              <p>${description}</p>
+              `,
               `
               <a href="/create">create</a>
               <a href="/update?id=${title}">update</a>
@@ -173,10 +175,21 @@ var app = http.createServer(function (request, response) {
           response.end();
         });
       });
-      console.log(post);
-      /*
-
-      */
+    });
+  } else if (queryData.pathname === "/delete_process") {
+    var body = "";
+    request.on("data", function (data) {
+      body += data;
+    });
+    request.on("end", function () {
+      // 이전에 위에서 만든 queryData 객체는 body의 데이터를 담고 있지 않으므로 입력할 body 값으로 새 객체를 만들어 줘야 한다
+      // querystring의 경우는 옛 기술로 deprecated 사장되었으므로 대체 기술인 URLSearchParams 를 사용하여 키와 값을 쌍으로 가지는 값을 인자로 받아 키/값 쌍을 순회가능한 객체를 만들어 준다
+      let post = new URLSearchParams(body);
+      let id = post.get("id");
+      fs.unlink(`data/${id}`, (error) => {
+        response.writeHead(302, { Location: `/` });
+        response.end();
+      });
     });
   } else {
     response.writeHead(404); //  // 서버의 상태코드를 반환한다. 페이지를 찾을 수 없다면 해당 상태인 상태 코드 404 을 리턴한다
