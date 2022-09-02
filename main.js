@@ -1,6 +1,7 @@
 var http = require("http");
 var fs = require("fs");
 let template = require("./lib/template.js");
+let path = require("path");
 
 var app = http.createServer(function (request, response) {
   // var url = require("url");  // url.parse 가 지원안되므로 불필요
@@ -29,20 +30,19 @@ var app = http.createServer(function (request, response) {
       });
     } else {
       fs.readdir("./data", (error, filelist) => {
-        fs.readFile(
-          `data/${queryData.searchParams.get("id")}`,
-          "utf-8",
-          (err, description) => {
-            var title = queryData.searchParams.get("id");
-            var list = template.list(filelist);
-            var html = template.HTML(
-              title,
-              list,
-              `
+        let filterdId = path.parse(queryData.searchParams.get("id")).base;
+        console.log(path.parse(queryData.searchParams.get("id")));
+        fs.readFile(`data/${filterdId}`, "utf-8", (err, description) => {
+          var title = queryData.searchParams.get("id");
+          var list = template.list(filelist);
+          var html = template.HTML(
+            title,
+            list,
+            `
               <h2>${title}</h2>
               <p>${description}</p>
               `,
-              `
+            `
               <a href="/create">create</a>
               <a href="/update?id=${title}">update</a>
               <form action="/delete_process" method="post">
@@ -50,12 +50,11 @@ var app = http.createServer(function (request, response) {
                 <input type="submit" value="delete">
               </form>
               `
-            );
-            // delete의 경우, get 방식으로 요청하면 안된다! 잊지말자
-            response.writeHead(200); //서버의 상태코드를 반환한다. 정상적으로 페이지를 찾을 수 있으므로 정상 상태를 나타내는 200 을 리턴한다
-            response.end(html); // 클라이언트에게 괄호 안의 데이터를 보내고 응답을 끝낸다
-          }
-        );
+          );
+          // delete의 경우, get 방식으로 요청하면 안된다! 잊지말자
+          response.writeHead(200); //서버의 상태코드를 반환한다. 정상적으로 페이지를 찾을 수 있으므로 정상 상태를 나타내는 200 을 리턴한다
+          response.end(html); // 클라이언트에게 괄호 안의 데이터를 보내고 응답을 끝낸다
+        });
       });
     }
   } else if (queryData.pathname === "/create") {
@@ -99,17 +98,15 @@ var app = http.createServer(function (request, response) {
     });
   } else if (queryData.pathname === "/update") {
     fs.readdir("./data", (error, filelist) => {
-      fs.readFile(
-        `data/${queryData.searchParams.get("id")}`,
-        "utf-8",
-        (err, description) => {
-          var title = queryData.searchParams.get("id");
-          var list = template.list(filelist);
-          var html = template.HTML(
-            title,
-            list,
-            // title 을 수정해도 업데이트 이전의 파일과 가리키는 값을 가리켜야 수정이 가능하므로 수정 대상을 id 라는 변수에 담아 저장하여  formData로 넘겨준다. 사용자에게 보일 필요 없는 값이므로 hidden 속성으로 보이지 않게 값을 넘겨준다. 즉 사용자가 변경하면 안되는 값을 보낼때 사용한다
-            `
+      let filterdId = path.parse(queryData.searchParams.get("id")).base;
+      fs.readFile(`data/${filterdId}`, "utf-8", (err, description) => {
+        var title = queryData.searchParams.get("id");
+        var list = template.list(filelist);
+        var html = template.HTML(
+          title,
+          list,
+          // title 을 수정해도 업데이트 이전의 파일과 가리키는 값을 가리켜야 수정이 가능하므로 수정 대상을 id 라는 변수에 담아 저장하여  formData로 넘겨준다. 사용자에게 보일 필요 없는 값이므로 hidden 속성으로 보이지 않게 값을 넘겨준다. 즉 사용자가 변경하면 안되는 값을 보낼때 사용한다
+          `
             <form action="/update_process" method="post">
               <input type="hidden" name="id" value="${title}">
               <p><input type="text" name="title" placeholder="title" value="${title}"></p>
@@ -121,14 +118,13 @@ var app = http.createServer(function (request, response) {
               </p>
             </form>
             `,
-            `
+          `
             <a href="/create">create</a> <a href="/update?id=${title}">update</a>
             `
-          );
-          response.writeHead(200); //서버의 상태코드를 반환한다. 정상적으로 페이지를 찾을 수 있으므로 정상 상태를 나타내는 200 을 리턴한다
-          response.end(html); // 클라이언트에게 괄호 안의 데이터를 보내고 응답을 끝낸다
-        }
-      );
+        );
+        response.writeHead(200); //서버의 상태코드를 반환한다. 정상적으로 페이지를 찾을 수 있으므로 정상 상태를 나타내는 200 을 리턴한다
+        response.end(html); // 클라이언트에게 괄호 안의 데이터를 보내고 응답을 끝낸다
+      });
     });
   } else if (queryData.pathname === "/update_process") {
     var body = "";
@@ -159,7 +155,8 @@ var app = http.createServer(function (request, response) {
       // querystring의 경우는 옛 기술로 deprecated 사장되었으므로 대체 기술인 URLSearchParams 를 사용하여 키와 값을 쌍으로 가지는 값을 인자로 받아 키/값 쌍을 순회가능한 객체를 만들어 준다
       let post = new URLSearchParams(body);
       let id = post.get("id");
-      fs.unlink(`data/${id}`, (error) => {
+      let filterdId = path.parse(id).base;
+      fs.unlink(`data/${filterdId}`, (error) => {
         response.writeHead(302, { Location: `/` });
         response.end();
       });
