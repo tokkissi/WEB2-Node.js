@@ -2,6 +2,7 @@ var http = require("http");
 var fs = require("fs");
 let template = require("./lib/template.js");
 let path = require("path");
+let sanitizeHtml = require("sanitize-html");
 
 var app = http.createServer(function (request, response) {
   // var url = require("url");  // url.parse 가 지원안되므로 불필요
@@ -34,19 +35,23 @@ var app = http.createServer(function (request, response) {
         console.log(path.parse(queryData.searchParams.get("id")));
         fs.readFile(`data/${filterdId}`, "utf-8", (err, description) => {
           var title = queryData.searchParams.get("id");
+          let sanitizeTitle = sanitizeHtml(title);
+          let sanitizeDescription = sanitizeHtml(description, {
+            allowedTags: ["h1"],
+          });
           var list = template.list(filelist);
           var html = template.HTML(
             title,
             list,
             `
-              <h2>${title}</h2>
-              <p>${description}</p>
+              <h2>${sanitizeTitle}</h2>
+              <p>${sanitizeDescription}</p>
               `,
             `
               <a href="/create">create</a>
-              <a href="/update?id=${title}">update</a>
+              <a href="/update?id=${sanitizeTitle}">update</a>
               <form action="/delete_process" method="post">
-                <input type="hidden" name="id" value="${title}">
+                <input type="hidden" name="id" value="${sanitizeTitle}">
                 <input type="submit" value="delete">
               </form>
               `

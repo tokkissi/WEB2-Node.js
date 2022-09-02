@@ -1,0 +1,25 @@
+{
+  "name": "web2-node",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tokkissi/WEB2-Node.js.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tokkissi/WEB2-Node.js/issues"
+  },
+  "homepage": "https://github.com/tokkissi/WEB2-Node.js#readme",
+  "dependencies": {
+    "sanitize-html": "^2.7.1"
+  }
+}
